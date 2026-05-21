@@ -6,10 +6,6 @@
     "dev": "concurrently \"npm run dev --workspace server\" \"npm run dev --workspace client\"",
     "dev:server": "npm run dev --workspace server",
     "dev:client": "npm run dev --workspace client",
-    "db:up": "docker compose up -d db",
-    "db:down": "docker compose down",
-    "migrate": "npm run migrate --workspace server",
-    "seed": "npm run seed --workspace server",
     "test": "npm run test --workspace server && npm run build --workspace client"
   },
   "workspaces": [
@@ -17,8 +13,7 @@
     "server"
   ],
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "vite": "^8.0.10"
+    "concurrently": "^9.2.1"
   },
   "dependencies": {
     "serverless-http": "^4.0.0"

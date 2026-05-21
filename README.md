@@ -1,30 +1,56 @@
 # Personal Details Manager
 
-## Deploying to Vercel
+A full-stack personal details manager with a React/Vite client, Express API, MongoDB storage, and a Netlify serverless deployment target.
 
-This project is configured for Vercel with:
+## Project Structure
 
-- `client/` built as the static Vite app
-- `api/` exposing the existing Express server as a Vercel serverless function
-- `/api/*` requests routed to the serverless API
-
-Set these environment variables in Vercel before deploying:
-
-```env
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=use-a-strong-password
-JWT_SECRET=use-a-long-random-secret
-DATABASE_URL=postgres://user:password@host:5432/database?sslmode=require
-CLIENT_ORIGIN=https://your-vercel-domain.vercel.app
+```text
+.
+client/                 React + Vite frontend
+server/                 Express API, MongoDB access, routes, tests
+netlify/functions/      Netlify serverless API adapter
+netlify.toml            Netlify build, functions, and redirects
+package.json            Workspace scripts
+.env.example            Required environment variables
 ```
 
-If the frontend and API are deployed in the same Vercel project, leave `VITE_API_BASE_URL` unset so the app uses same-origin `/api`.
-If they are deployed as separate Vercel projects, set `VITE_API_BASE_URL` on the frontend project to the backend API URL, for example:
+## Setup
 
-```env
-VITE_API_BASE_URL=https://your-backend-vercel-domain.vercel.app/api
+Use either a local MongoDB install or a hosted MongoDB Atlas connection string.
+
+```bash
+npm install
+copy .env.example .env
+npm run dev
 ```
 
-In that separate-project setup, `CLIENT_ORIGIN` on the backend project must exactly match the frontend URL, for example `https://personal-details-manager-frontend.vercel.app`.
+Set `MONGODB_URI` in `.env`:
 
-Use a hosted PostgreSQL database for `DATABASE_URL`. The local Docker database in `docker-compose.yml` is only for local development.
+```env
+MONGODB_URI=mongodb://127.0.0.1:27017
+MONGODB_DB=personal_details_manager
+```
+
+The API creates indexes automatically and inserts the default rows when the MongoDB collection is empty.
+
+Client: `http://localhost:5173`
+API: `http://localhost:4000/api`
+
+## Useful Scripts
+
+```bash
+npm run dev          # Start client and server
+npm run dev:client   # Start only the frontend
+npm run dev:server   # Start only the API
+npm test             # Run API tests and client build
+```
+
+## Deployment
+
+This repo is configured for Netlify:
+
+- `client/` builds to `client/dist`
+- `netlify/functions/api.js` wraps the Express app
+- `/api/*` redirects to the Netlify function
+
+Set the variables from `.env.example` in Netlify. For production, use a hosted MongoDB Atlas `MONGODB_URI` and set `CLIENT_ORIGIN` to the deployed site URL, for example `https://personal-details-manager.netlify.app`.
