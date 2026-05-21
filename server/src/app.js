@@ -40,7 +40,7 @@ function resolveCorsOrigin(origin, callback) {
     return callback(null, true);
   }
 
-  if (origin === env.clientOrigin) {
+  if (normalizeOrigin(origin) === normalizeOrigin(env.clientOrigin)) {
     return callback(null, true);
   }
 
@@ -53,4 +53,8 @@ function resolveCorsOrigin(origin, callback) {
   }
 
   return callback(new Error('Origin is not allowed by CORS.'));
+}
+
+function normalizeOrigin(origin) {
+  return String(origin || '').replace(/\/+$/, '');
 }
