@@ -1,9 +1,4 @@
-const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-const API_BASE_URL =
-  shouldUseSameOriginApi(configuredApiBaseUrl)
-    ? '/api'
-    : configuredApiBaseUrl || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 export async function apiRequest(path, { token, method = 'GET', body } = {}) {
   let response;
@@ -29,22 +24,4 @@ export async function apiRequest(path, { token, method = 'GET', body } = {}) {
   }
 
   return data;
-}
-
-function shouldUseSameOriginApi(apiBaseUrl) {
-  if (!apiBaseUrl || typeof window === 'undefined') return false;
-
-  const host = window.location.hostname;
-  const isLocalPage = ['localhost', '127.0.0.1'].includes(host);
-  if (isLocalPage) return false;
-
-  const isNetlifyDeployment = host === 'personal-details-manager.netlify.app' || host.endsWith('--personal-details-manager.netlify.app');
-  if (!isNetlifyDeployment) return false;
-
-  try {
-    const apiUrl = new URL(apiBaseUrl, window.location.origin);
-    return apiUrl.origin !== window.location.origin;
-  } catch {
-    return false;
-  }
 }
