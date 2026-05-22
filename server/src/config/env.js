@@ -1,12 +1,14 @@
 import dotenv from 'dotenv';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const rootEnvPath = path.resolve(dirname, '../../../.env');
+const envPaths = [
+  path.resolve(process.cwd(), '.env'),
+  path.resolve(process.cwd(), '../.env')
+];
 
-dotenv.config({ path: rootEnvPath });
-dotenv.config();
+for (const envPath of envPaths) {
+  dotenv.config({ path: envPath });
+}
 
 export const env = {
   adminUsername: process.env.ADMIN_USERNAME,
