@@ -18,7 +18,8 @@ export const env = {
   mongodbDb: process.env.MONGODB_DB || 'personal_details_manager',
   port: Number(process.env.PORT || 4000),
   clientOrigin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
-  isProduction: process.env.NODE_ENV === 'production'
+  isProduction: process.env.NODE_ENV === 'production',
+  isServerless: Boolean(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
 };
 
 export function requireEnv(key) {

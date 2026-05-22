@@ -368,7 +368,7 @@ function parseMongoId(id) {
 }
 
 function shouldUseLocalId(id) {
-  return !env.isProduction && !ObjectId.isValid(id);
+  return !isPersistentDatabaseRequired() && !ObjectId.isValid(id);
 }
 
 function throwNotFound() {
@@ -382,9 +382,13 @@ function escapeRegex(value) {
 }
 
 function shouldUseLocalFallback(error) {
-  return !env.isProduction && (
+  return !isPersistentDatabaseRequired() && (
     error?.status === 503 ||
     error?.name === 'MongoServerSelectionError' ||
     ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'].includes(error?.code)
   );
+}
+
+function isPersistentDatabaseRequired() {
+  return env.isProduction || env.isServerless;
 }
