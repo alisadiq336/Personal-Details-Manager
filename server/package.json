@@ -7,7 +7,7 @@
     "dev": "node src/index.js",
     "start": "node src/index.js",
     "test:auth-api": "node scripts/auth-api-sample.js",
-    "test": "node --test"
+    "test": "node --test --experimental-test-isolation=none"
   },
   "dependencies": {
     "cors": "^2.8.5",

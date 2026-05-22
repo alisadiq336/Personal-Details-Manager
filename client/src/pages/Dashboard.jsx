@@ -53,6 +53,10 @@ export default function Dashboard() {
   const showingSheetEditor = editingSheet || importedRows.length > 0;
   const visibleRows = showingSheetEditor ? importedRows : rows;
   const visibleColumns = showingSheetEditor ? importColumns : columns;
+  const validImportRows = useMemo(
+    () => importedRows.filter((row) => hasRequiredImportFields(row)),
+    [importedRows]
+  );
 
   const params = useMemo(() => {
     const next = new URLSearchParams();
@@ -224,6 +228,18 @@ export default function Dashboard() {
   }
 
   async function saveImportedRows() {
+    if (!importedRows.length) {
+      setImportMessage('');
+      setError('Add at least one row before saving.');
+      return;
+    }
+
+    if (!validImportRows.length) {
+      setImportMessage('');
+      setError('Enter name, email, and phone before saving a row.');
+      return;
+    }
+
     setSavingImport(true);
     setError('');
     setImportMessage('');
@@ -301,9 +317,9 @@ export default function Dashboard() {
         </button>
         {showingSheetEditor ? (
           <>
-            <button className="export-button" onClick={saveImportedRows} disabled={savingImport || !importedRows.length}>
+            <button className="export-button" onClick={saveImportedRows} disabled={savingImport || !validImportRows.length}>
               <Save size={18} />
-              {savingImport ? 'Saving...' : 'Save import'}
+              {savingImport ? 'Saving...' : 'Save rows'}
             </button>
             <button className="secondary icon-button" onClick={clearImport} disabled={savingImport}>
               <X size={18} />
@@ -370,9 +386,19 @@ export default function Dashboard() {
                   ))}
                   <td>
                     {showingSheetEditor ? (
-                      <button className="secondary icon-only" onClick={() => removeImportedRow(index)} title="Remove row">
-                        <X size={16} />
-                      </button>
+                      <div className="row-actions">
+                        <button
+                          className="secondary icon-only"
+                          onClick={saveImportedRows}
+                          disabled={savingImport || !hasRequiredImportFields(row)}
+                          title="Save row"
+                        >
+                          <Save size={16} />
+                        </button>
+                        <button className="secondary icon-only" onClick={() => removeImportedRow(index)} disabled={savingImport} title="Remove row">
+                          <X size={16} />
+                        </button>
+                      </div>
                     ) : String(editingRowId) === String(row.id) ? (
                       <div className="row-actions">
                         <button
@@ -466,4 +492,8 @@ function formatCell(value, key) {
 
 function rowToDraft(row) {
   return Object.fromEntries(columns.map(([key]) => [key, row?.[key] || '']));
+}
+
+function hasRequiredImportFields(row) {
+  return Boolean(row?.name?.trim() && row?.email?.trim() && row?.phoneNumber?.trim());
 }

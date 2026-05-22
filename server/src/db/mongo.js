@@ -59,6 +59,7 @@ async function connect() {
 async function seedDefaultRows(collection) {
   const total = await collection.countDocuments();
   if (total > 0) return;
+  if (!defaultPersonalDetailsRows.length) return;
 
   const now = new Date();
   await collection.insertMany(defaultPersonalDetailsRows.map((values) => ({
