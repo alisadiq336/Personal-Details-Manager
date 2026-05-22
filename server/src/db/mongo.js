@@ -21,7 +21,10 @@ let client;
 let collectionPromise;
 
 export async function personalDetailsCollection() {
-  collectionPromise ??= connect();
+  collectionPromise ??= connect().catch((error) => {
+    collectionPromise = undefined;
+    throw error;
+  });
   return collectionPromise;
 }
 
@@ -33,7 +36,7 @@ export async function closeMongo() {
 
 async function connect() {
   client = new MongoClient(requireEnv('MONGODB_URI'), {
-    serverSelectionTimeoutMS: 3000
+    serverSelectionTimeoutMS: 10000
   });
 
   await client.connect();
