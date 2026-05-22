@@ -1,4 +1,24 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+const API_BASE_URL = resolveApiBaseUrl();
+
+function resolveApiBaseUrl() {
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+
+  if (!configuredUrl) {
+    return '/api';
+  }
+
+  if (typeof window === 'undefined') {
+    return configuredUrl;
+  }
+
+  const currentHost = window.location.hostname;
+
+  if (currentHost.endsWith('.netlify.app')) {
+    return '/api';
+  }
+
+  return configuredUrl;
+}
 
 export async function apiRequest(path, { token, method = 'GET', body } = {}) {
   let response;
@@ -13,7 +33,7 @@ export async function apiRequest(path, { token, method = 'GET', body } = {}) {
       body: body ? JSON.stringify(body) : undefined
     });
   } catch {
-    throw new Error('Cannot reach the API server. Start the backend and try again.');
+    throw new Error('Cannot reach the API server. Check the API deployment and try again.');
   }
 
   const contentType = response.headers.get('content-type') || '';

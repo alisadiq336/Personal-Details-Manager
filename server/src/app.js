@@ -44,6 +44,10 @@ function resolveCorsOrigin(origin, callback) {
     return callback(null, true);
   }
 
+  if (/^https:\/\/personal-details-manager\.netlify\.app$/.test(origin)) {
+    return callback(null, true);
+  }
+
   if (/^https:\/\/[a-z0-9-]+--personal-details-manager\.netlify\.app$/.test(origin)) {
     return callback(null, true);
   }
