@@ -26,14 +26,12 @@ export function createApp() {
     res.json({ status: 'ok' });
   });
 
-  app.use('/api/auth', authRoutes);
-  app.use('/api/personal-details', personalDetailsRoutes);
-  app.use(errorHandler);
+  app.use('/api/auth', resolveExpressHandler(authRoutes, 'auth routes'));
+  app.use('/api/personal-details', resolveExpressHandler(personalDetailsRoutes, 'personal details routes'));
+  app.use(resolveExpressHandler(errorHandler, 'error handler'));
 
   return app;
 }
-
-export default createApp();
 
 function resolveCorsOrigin(origin, callback) {
   if (!origin) {
@@ -61,4 +59,14 @@ function resolveCorsOrigin(origin, callback) {
 
 function normalizeOrigin(origin) {
   return String(origin || '').replace(/\/+$/, '');
+}
+
+function resolveExpressHandler(handler, label) {
+  const resolvedHandler = typeof handler === 'function' ? handler : handler?.default;
+
+  if (typeof resolvedHandler !== 'function') {
+    throw new TypeError(`${label} did not resolve to an Express handler.`);
+  }
+
+  return resolvedHandler;
 }
