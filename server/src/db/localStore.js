@@ -1,10 +1,10 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { defaultPersonalDetailsRows } from './defaultPersonalDetails.js';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.resolve(dirname, '../../data');
+const dataDir = path.basename(process.cwd()) === 'server'
+  ? path.resolve(process.cwd(), 'data')
+  : path.resolve(process.cwd(), 'server/data');
 const dataFile = path.join(dataDir, 'personal-details.json');
 
 const columns = [
