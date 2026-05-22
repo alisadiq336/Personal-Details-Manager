@@ -54,3 +54,7 @@ This repo is configured for Netlify:
 - `/api/*` redirects to the Netlify function
 
 Set the variables from `.env.example` in Netlify. For production, use a hosted MongoDB Atlas `MONGODB_URI` and set `CLIENT_ORIGIN` to the deployed site URL, for example `https://personal-details-manager.netlify.app`.
+
+Do not include the angle brackets from MongoDB Atlas connection-string placeholders. For example, use `mongodb+srv://user:encoded-password@cluster.mongodb.net/?retryWrites=true&w=majority`, not `mongodb+srv://user:<encoded-password>@cluster.mongodb.net/...`.
+
+In MongoDB Atlas, add a Network Access rule that allows Netlify to connect. For simple deployments, add `0.0.0.0/0`, then redeploy the Netlify site after saving the environment variables.
