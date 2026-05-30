@@ -3,7 +3,7 @@ export function errorHandler(error, _req, res, _next) {
 
   if (isDatabaseUnavailable(error)) {
     return res.status(503).json({
-      message: 'Database is unavailable. Start MongoDB or set MONGODB_URI to a reachable MongoDB connection string.'
+      message: 'Database is unavailable. Start PostgreSQL or set DATABASE_URL to a reachable PostgreSQL connection string.'
     });
   }
 
@@ -13,5 +13,6 @@ export function errorHandler(error, _req, res, _next) {
 }
 
 function isDatabaseUnavailable(error) {
-  return error?.name === 'MongoServerSelectionError' || ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'].includes(error?.code);
+  return ['Connection terminated unexpectedly', 'Connection terminated'].includes(error?.message) ||
+    ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'].includes(error?.code);
 }

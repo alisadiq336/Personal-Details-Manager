@@ -1,12 +1,11 @@
 import { env } from '../config/env.js';
-import { ObjectId } from 'mongodb';
 import {
   appendLocalPersonalDetails,
   deleteLocalPersonalDetails,
   readLocalPersonalDetails,
   updateLocalPersonalDetails
 } from '../db/localStore.js';
-import { personalDetailsCollection } from '../db/mongo.js';
+import { getPostgresClient, postgresQuery } from '../db/postgres.js';
 
 const SORT_COLUMNS = {
   name: 'name',
@@ -46,7 +45,7 @@ const IMPORT_COLUMNS = [
 
 export async function getPersonalDetails(query) {
   try {
-    return await getMongoPersonalDetails(query);
+    return await getPostgresPersonalDetails(query);
   } catch (error) {
     if (shouldUseLocalFallback(error)) {
       return getLocalPersonalDetails(query);
@@ -58,7 +57,7 @@ export async function getPersonalDetails(query) {
 
 export async function importPersonalDetails(rows) {
   try {
-    return await importMongoPersonalDetails(rows);
+    return await importPostgresPersonalDetails(rows);
   } catch (error) {
     if (shouldUseLocalFallback(error)) {
       return importLocalPersonalDetails(rows);
@@ -74,7 +73,7 @@ export async function updatePersonalDetail(id, row) {
   }
 
   try {
-    return await updateMongoPersonalDetail(id, row);
+    return await updatePostgresPersonalDetail(id, row);
   } catch (error) {
     if (shouldUseLocalFallback(error)) {
       return updateLocalPersonalDetail(id, row);
@@ -90,7 +89,7 @@ export async function deletePersonalDetail(id) {
   }
 
   try {
-    return await deleteMongoPersonalDetail(id);
+    return await deletePostgresPersonalDetail(id);
   } catch (error) {
     if (shouldUseLocalFallback(error)) {
       return deleteLocalPersonalDetail(id);
@@ -100,7 +99,7 @@ export async function deletePersonalDetail(id) {
   }
 }
 
-async function getMongoPersonalDetails(query) {
+async function getPostgresPersonalDetails(query) {
   const {
     search,
     country,
@@ -113,90 +112,159 @@ async function getMongoPersonalDetails(query) {
   const page = Math.max(Number.parseInt(query.page || '1', 10), 1);
   const limit = Math.min(Math.max(Number.parseInt(query.limit || '10', 10), 1), 100);
   const offset = (page - 1) * limit;
-  const collection = await personalDetailsCollection();
-  const filter = buildMongoFilter({ search, country, city, organization });
+  const filter = buildPostgresFilter({ search, country, city, organization });
   const sortColumn = SORT_COLUMNS[sortBy] || SORT_COLUMNS.createdAt;
-  const sortDirection = String(sortOrder).toLowerCase() === 'asc' ? 1 : -1;
+  const sortDirection = String(sortOrder).toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+  const limitParam = filter.params.length + 1;
+  const offsetParam = filter.params.length + 2;
 
   const [data, total, countries, cities, organizations] = await Promise.all([
-    collection.find(filter).sort({ [sortColumn]: sortDirection, _id: 1 }).skip(offset).limit(limit).toArray(),
-    collection.countDocuments(filter),
-    collection.distinct('country'),
-    collection.distinct('city'),
-    collection.distinct('organization')
+    postgresQuery(`
+      SELECT id, name, email, "phoneNumber", organization, country, city, "fullAddress",
+        cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
+      FROM "personalDetails"
+      ${filter.where}
+      ORDER BY ${quoteColumn(sortColumn)} ${sortDirection}, id ASC
+      LIMIT $${limitParam} OFFSET $${offsetParam}
+    `, [...filter.params, limit, offset]),
+    postgresQuery(`SELECT COUNT(*)::int AS total FROM "personalDetails" ${filter.where}`, filter.params),
+    selectDistinctFilter('country'),
+    selectDistinctFilter('city'),
+    selectDistinctFilter('organization')
   ]);
 
   return {
-    data: data.map(formatMongoRow),
+    data: data.rows.map(formatPostgresRow),
     pagination: {
       page,
       limit,
-      total,
-      totalPages: Math.ceil(total / limit)
+      total: total.rows[0].total,
+      totalPages: Math.ceil(total.rows[0].total / limit)
     },
     filters: {
-      countries: uniqueSorted(countries),
-      cities: uniqueSorted(cities),
-      organizations: uniqueSorted(organizations)
+      countries: countries.rows.map((row) => row.value),
+      cities: cities.rows.map((row) => row.value),
+      organizations: organizations.rows.map((row) => row.value)
     }
   };
 }
 
-async function importMongoPersonalDetails(rows) {
+async function importPostgresPersonalDetails(rows) {
   const validRows = validateImportRows(rows);
-  const collection = await personalDetailsCollection();
+  const client = await getPostgresClient();
   const now = new Date();
   const docs = validRows.map((row) => ({
     ...row,
-    dateOfBirth: row.dateOfBirth ? new Date(row.dateOfBirth) : null,
+    dateOfBirth: row.dateOfBirth || null,
     createdAt: now,
     updatedAt: now
   }));
-  const result = await collection.insertMany(docs);
 
-  return {
-    imported: result.insertedCount,
-    skipped: rows.length - validRows.length,
-    data: docs.map((doc, index) => formatMongoRow({ ...doc, _id: result.insertedIds[index] }))
-  };
+  try {
+    await client.query('BEGIN');
+    const insertedRows = [];
+
+    for (const doc of docs) {
+      const result = await client.query(`
+        INSERT INTO "personalDetails" (
+          name, email, "phoneNumber", organization, country, city, "fullAddress",
+          cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        RETURNING id, name, email, "phoneNumber", organization, country, city, "fullAddress",
+          cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
+      `, [
+        doc.name,
+        doc.email,
+        doc.phoneNumber,
+        doc.organization,
+        doc.country,
+        doc.city,
+        doc.fullAddress,
+        doc.cnic,
+        doc.dateOfBirth,
+        doc.gender,
+        doc.notes,
+        doc.createdAt,
+        doc.updatedAt
+      ]);
+
+      insertedRows.push(result.rows[0]);
+    }
+
+    await client.query('COMMIT');
+
+    return {
+      imported: insertedRows.length,
+      skipped: rows.length - validRows.length,
+      data: insertedRows.map(formatPostgresRow)
+    };
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
-async function updateMongoPersonalDetail(id, row) {
-  const objectId = parseMongoId(id);
-  const collection = await personalDetailsCollection();
+async function updatePostgresPersonalDetail(id, row) {
+  const rowId = parsePostgresId(id);
   const patch = normalizeImportRow(row);
-  const update = {
-    ...patch,
-    dateOfBirth: patch.dateOfBirth ? new Date(patch.dateOfBirth) : null,
-    updatedAt: new Date()
-  };
-  const result = await collection.findOneAndUpdate(
-    { _id: objectId },
-    { $set: update },
-    { returnDocument: 'after' }
-  );
+  const result = await postgresQuery(`
+    UPDATE "personalDetails"
+    SET name = $1,
+      email = $2,
+      "phoneNumber" = $3,
+      organization = $4,
+      country = $5,
+      city = $6,
+      "fullAddress" = $7,
+      cnic = $8,
+      "dateOfBirth" = $9,
+      gender = $10,
+      notes = $11,
+      "updatedAt" = $12
+    WHERE id = $13
+    RETURNING id, name, email, "phoneNumber", organization, country, city, "fullAddress",
+      cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
+  `, [
+    patch.name,
+    patch.email,
+    patch.phoneNumber,
+    patch.organization,
+    patch.country,
+    patch.city,
+    patch.fullAddress,
+    patch.cnic,
+    patch.dateOfBirth || null,
+    patch.gender,
+    patch.notes,
+    new Date(),
+    rowId
+  ]);
 
-  if (!result) throwNotFound();
+  if (!result.rowCount) throwNotFound();
 
-  return { data: formatMongoRow(result) };
+  return { data: formatPostgresRow(result.rows[0]) };
 }
 
-async function deleteMongoPersonalDetail(id) {
-  const objectId = parseMongoId(id);
-  const collection = await personalDetailsCollection();
-  const result = await collection.deleteOne({ _id: objectId });
+async function deletePostgresPersonalDetail(id) {
+  const rowId = parsePostgresId(id);
+  const result = await postgresQuery('DELETE FROM "personalDetails" WHERE id = $1', [rowId]);
 
-  if (!result.deletedCount) throwNotFound();
+  if (!result.rowCount) throwNotFound();
 
   return { deleted: true };
 }
 
-function buildMongoFilter({ search, country, city, organization }) {
-  const filter = {};
+function buildPostgresFilter({ search, country, city, organization }) {
+  const conditions = [];
+  const params = [];
 
   if (search?.trim()) {
-    const searchRegex = new RegExp(escapeRegex(search.trim()), 'i');
-    filter.$or = SEARCH_COLUMNS.map((column) => ({ [column]: searchRegex }));
+    params.push(`%${search.trim()}%`);
+    const searchParam = `$${params.length}`;
+    conditions.push(`(${SEARCH_COLUMNS.map((column) => `${quoteColumn(column)} ILIKE ${searchParam}`).join(' OR ')})`);
   }
 
   for (const [column, value] of [
@@ -204,10 +272,16 @@ function buildMongoFilter({ search, country, city, organization }) {
     ['city', city],
     ['organization', organization]
   ]) {
-    if (value?.trim()) filter[column] = value.trim();
+    if (value?.trim()) {
+      params.push(value.trim());
+      conditions.push(`${quoteColumn(column)} = $${params.length}`);
+    }
   }
 
-  return filter;
+  return {
+    where: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '',
+    params
+  };
 }
 
 function validateImportRows(rows) {
@@ -297,9 +371,9 @@ async function deleteLocalPersonalDetail(id) {
   return { deleted: true };
 }
 
-function formatMongoRow(row) {
+function formatPostgresRow(row) {
   return {
-    id: row._id?.toString(),
+    id: row.id?.toString(),
     name: row.name,
     email: row.email,
     phoneNumber: row.phoneNumber,
@@ -329,6 +403,20 @@ function buildLocalFilters(rows) {
     cities: uniqueSorted(rows.map((row) => row.city)),
     organizations: uniqueSorted(rows.map((row) => row.organization))
   };
+}
+
+function selectDistinctFilter(column) {
+  const quotedColumn = quoteColumn(column);
+  return postgresQuery(`
+    SELECT DISTINCT ${quotedColumn} AS value
+    FROM "personalDetails"
+    WHERE ${quotedColumn} IS NOT NULL AND ${quotedColumn} <> ''
+    ORDER BY ${quotedColumn}
+  `);
+}
+
+function quoteColumn(column) {
+  return /^[a-z][a-z0-9_]*$/.test(column) ? column : `"${column}"`;
 }
 
 function uniqueSorted(values) {
@@ -362,13 +450,13 @@ function formatDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
 }
 
-function parseMongoId(id) {
-  if (!ObjectId.isValid(id)) throwNotFound();
-  return new ObjectId(id);
+function parsePostgresId(id) {
+  if (!isValidPostgresId(id)) throwNotFound();
+  return id;
 }
 
 function shouldUseLocalId(id) {
-  return !isPersistentDatabaseRequired() && !ObjectId.isValid(id);
+  return !isPersistentDatabaseRequired() && !isValidPostgresId(id);
 }
 
 function throwNotFound() {
@@ -377,14 +465,14 @@ function throwNotFound() {
   throw error;
 }
 
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function isValidPostgresId(id) {
+  return /^[1-9]\d*$/.test(String(id));
 }
 
 function shouldUseLocalFallback(error) {
   return !isPersistentDatabaseRequired() && (
     error?.status === 503 ||
-    error?.name === 'MongoServerSelectionError' ||
+    ['Connection terminated unexpectedly', 'Connection terminated'].includes(error?.message) ||
     ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT'].includes(error?.code)
   );
 }

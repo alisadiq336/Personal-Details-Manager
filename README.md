@@ -1,13 +1,13 @@
 # Personal Details Manager
 
-A full-stack personal details manager with a React/Vite client, Express API, MongoDB storage, and a Netlify serverless deployment target.
+A full-stack personal details manager with a React/Vite client, Express API, PostgreSQL storage, and a Netlify serverless deployment target.
 
 ## Project Structure
 
 ```text
 .
 client/                 React + Vite frontend
-server/                 Express API, MongoDB access, routes, tests
+server/                 Express API, PostgreSQL access, routes, tests
 netlify/functions/      Netlify serverless API adapter
 netlify.toml            Netlify build, functions, and redirects
 package.json            Workspace scripts
@@ -16,7 +16,7 @@ package.json            Workspace scripts
 
 ## Setup
 
-Use either a local MongoDB install or a hosted MongoDB Atlas connection string.
+Use either a local PostgreSQL database or a hosted PostgreSQL connection string.
 
 ```bash
 npm install
@@ -24,14 +24,13 @@ copy .env.example .env
 npm run dev
 ```
 
-Set `MONGODB_URI` in `.env`:
+Set `DATABASE_URL` in `.env`:
 
 ```env
-MONGODB_URI=mongodb://127.0.0.1:27017
-MONGODB_DB=personal_details_manager
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/personal_details_manager
 ```
 
-The API creates indexes automatically and inserts the default rows when the MongoDB collection is empty.
+Create the database first if it does not already exist. The API creates the `personalDetails` table, indexes, and default rows automatically when the table is empty.
 
 Client: `http://localhost:5173`
 API: `http://localhost:4000/api`
@@ -53,8 +52,6 @@ This repo is configured for Netlify:
 - `netlify/functions/api.js` wraps the Express app
 - `/api/*` redirects to the Netlify function
 
-Set the variables from `.env.example` in Netlify. For production, use a hosted MongoDB Atlas `MONGODB_URI` and set `CLIENT_ORIGIN` to the deployed site URL, for example `https://personal-details-manager.netlify.app`.
+Set the variables from `.env.example` in Netlify. For production, use a hosted PostgreSQL `DATABASE_URL` and set `CLIENT_ORIGIN` to the deployed site URL, for example `https://personal-details-manager.netlify.app`.
 
-Do not include the angle brackets from MongoDB Atlas connection-string placeholders. For example, use `mongodb+srv://user:encoded-password@cluster.mongodb.net/?retryWrites=true&w=majority`, not `mongodb+srv://user:<encoded-password>@cluster.mongodb.net/...`.
-
-In MongoDB Atlas, add a Network Access rule that allows Netlify to connect. For simple deployments, add `0.0.0.0/0`, then redeploy the Netlify site after saving the environment variables.
+If your PostgreSQL provider requires SSL, set `PGSSLMODE=require` along with `DATABASE_URL`.
