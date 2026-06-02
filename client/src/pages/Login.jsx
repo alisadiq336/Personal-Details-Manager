@@ -1,4 +1,4 @@
-import { LockKeyhole } from 'lucide-react';
+import { KeyRound, LockKeyhole, ShieldCheck } from 'lucide-react';
 import React, { useState } from 'react';
 import { apiRequest } from '../api/client.js';
 import { useAuth } from '../state/AppContext.jsx';
@@ -6,7 +6,9 @@ import { useAuth } from '../state/AppContext.jsx';
 export default function Login() {
   const { login } = useAuth();
   const [form, setForm] = useState({ username: '', password: '' });
+  const [remember, setRemember] = useState(() => localStorage.getItem('pdm_remember') !== 'false');
   const [error, setError] = useState('');
+  const [hint, setHint] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event) {
@@ -24,7 +26,7 @@ export default function Login() {
         method: 'POST',
         body: form
       });
-      login(auth);
+      login(auth, remember);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -34,12 +36,26 @@ export default function Login() {
 
   return (
     <main className="login-shell">
+      <section className="login-copy" aria-label="Product summary">
+        <div className="login-copy-mark">
+          <ShieldCheck size={28} />
+        </div>
+        <span>Secure workspace</span>
+        <h1>Personal Details Manager</h1>
+        <p>Organize records, documents, exports, and profile details from one focused admin dashboard.</p>
+        <div className="login-metrics">
+          <strong>Admin</strong>
+          <strong>Records</strong>
+          <strong>Reports</strong>
+        </div>
+      </section>
       <section className="login-panel" aria-label="Admin login">
         <div className="brand-mark">
           <LockKeyhole size={28} />
         </div>
-        <h1>Personal Details Manager</h1>
-        <p>Admin access</p>
+        <span className="view-eyebrow">Welcome back</span>
+        <h1>Sign in</h1>
+        <p>Use your admin account to continue.</p>
 
         <form onSubmit={handleSubmit} className="login-form">
           <label>
@@ -59,7 +75,25 @@ export default function Login() {
               autoComplete="current-password"
             />
           </label>
+          <div className="login-options">
+            <label>
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(event) => setRemember(event.target.checked)}
+              />
+              Remember me
+            </label>
+            <button
+              type="button"
+              className="link-button"
+              onClick={() => setHint('Use the ADMIN_USERNAME and ADMIN_PASSWORD configured in your server environment. Password changes should be made there for this deployment.')}
+            >
+              Forgot password?
+            </button>
+          </div>
           {error ? <div className="form-error">{error}</div> : null}
+          {hint ? <div className="auth-hint"><KeyRound size={16} />{hint}</div> : null}
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Signing in...' : 'Sign in'}
           </button>
