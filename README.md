@@ -52,6 +52,17 @@ This repo is configured for Netlify:
 - `netlify/functions/api.js` wraps the Express app
 - `/api/*` redirects to the Netlify function
 
-Set the variables from `.env.example` in Netlify. For production, use a hosted PostgreSQL `DATABASE_URL` and set `CLIENT_ORIGIN` to the deployed site URL, for example `https://personal-details-manager.netlify.app`.
+Set the variables from `.env.example` in Netlify or Vercel. At minimum, set:
+
+```env
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your-secure-password
+JWT_SECRET=your-long-random-secret
+CLIENT_ORIGIN=https://personal-detail-manager.netlify.app
+```
+
+For persistent production data, also set a hosted PostgreSQL `DATABASE_URL`. If `DATABASE_URL` is missing, serverless deployments use an in-memory demo store so the app can load, but imported or edited records are not guaranteed to persist between function restarts.
 
 If your PostgreSQL provider requires SSL, set `PGSSLMODE=require` along with `DATABASE_URL`.
+
+For a Vercel API-only deployment, deploy the `server/` directory. The `server/vercel.json` file routes requests through the Express API handler.

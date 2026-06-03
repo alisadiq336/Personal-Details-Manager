@@ -12,10 +12,10 @@ export function createApp() {
 
 
   app.use(helmet());
-  app.use(cors({ origin: "https://personal-details-manager-server.vercel.app/" }));
+  app.use(cors({ origin: resolveCorsOrigin }));
   app.use(express.json());
 
-  app.get('/', (_req, res) => {
+  app.get(['/', '/api'], (_req, res) => {
     res.json({
       activeStatus: 'ok',
       error: false
@@ -42,11 +42,11 @@ function resolveCorsOrigin(origin, callback) {
     return callback(null, true);
   }
 
-  if (/^https:\/\/personal-details-manager\.netlify\.app$/.test(origin)) {
+  if (/^https:\/\/personal-details?-manager\.netlify\.app$/.test(origin)) {
     return callback(null, true);
   }
 
-  if (/^https:\/\/[a-z0-9-]+--personal-details-manager\.netlify\.app$/.test(origin)) {
+  if (/^https:\/\/[a-z0-9-]+--personal-details?-manager\.netlify\.app$/.test(origin)) {
     return callback(null, true);
   }
 

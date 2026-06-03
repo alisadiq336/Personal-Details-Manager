@@ -478,5 +478,5 @@ function shouldUseLocalFallback(error) {
 }
 
 function isPersistentDatabaseRequired() {
-  return env.isProduction || env.isServerless;
+  return Boolean(env.databaseUrl);
 }

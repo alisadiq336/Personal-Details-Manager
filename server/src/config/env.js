@@ -6,8 +6,15 @@ const envPaths = [
   path.resolve(process.cwd(), '../.env')
 ];
 
-for (const envPath of envPaths) {
-  dotenv.config({ path: envPath });
+const shouldLoadDotenv = !process.env.NETLIFY &&
+  !process.env.VERCEL &&
+  !process.env.AWS_LAMBDA_FUNCTION_NAME &&
+  process.env.NODE_ENV !== 'production';
+
+if (shouldLoadDotenv) {
+  for (const envPath of envPaths) {
+    dotenv.config({ path: envPath });
+  }
 }
 
 export const env = {

@@ -6,6 +6,7 @@ const dataDir = path.basename(process.cwd()) === 'server'
   ? path.resolve(process.cwd(), 'data')
   : path.resolve(process.cwd(), 'server/data');
 const dataFile = path.join(dataDir, 'personal-details.json');
+const isServerlessRuntime = Boolean(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 const columns = [
   'name',
@@ -22,6 +23,7 @@ const columns = [
 ];
 
 let rowsPromise;
+let memoryRows;
 
 export async function readLocalPersonalDetails() {
   rowsPromise ??= loadRows();
@@ -74,6 +76,11 @@ export async function deleteLocalPersonalDetails(id) {
 }
 
 async function loadRows() {
+  if (isServerlessRuntime) {
+    memoryRows ??= createSeedRows();
+    return memoryRows;
+  }
+
   try {
     const content = await readFile(dataFile, 'utf8');
     const parsed = JSON.parse(content);
@@ -82,19 +89,28 @@ async function loadRows() {
     if (error.code !== 'ENOENT') throw error;
   }
 
-  const now = new Date().toISOString();
-  const seededRows = defaultPersonalDetailsRows.map((values, index) => ({
-    id: index + 1,
-    ...Object.fromEntries(columns.map((column, columnIndex) => [column, values[columnIndex] ?? null])),
-    createdAt: now,
-    updatedAt: now
-  }));
+  const seededRows = createSeedRows();
 
   await saveRows(seededRows);
   return seededRows;
 }
 
 async function saveRows(rows) {
+  if (isServerlessRuntime) {
+    memoryRows = rows;
+    return;
+  }
+
   await mkdir(dataDir, { recursive: true });
   await writeFile(dataFile, `${JSON.stringify(rows, null, 2)}\n`);
+}
+
+function createSeedRows() {
+  const now = new Date().toISOString();
+  return defaultPersonalDetailsRows.map((values, index) => ({
+    id: index + 1,
+    ...Object.fromEntries(columns.map((column, columnIndex) => [column, values[columnIndex] ?? null])),
+    createdAt: now,
+    updatedAt: now
+  }));
 }
