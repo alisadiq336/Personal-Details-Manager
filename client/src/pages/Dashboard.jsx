@@ -676,7 +676,7 @@ export default function Dashboard() {
                   visibleRows.map((row, index) => (
                     <tr key={row.id ?? index} onDoubleClick={() => !showingSheetEditor && setActiveRecord(row)}>
                       {!showingSheetEditor ? (
-                        <td className="select-col">
+                        <td className="select-col" data-label="Select">
                           <input
                             type="checkbox"
                             checked={selectedRows.includes(String(row.id))}
@@ -685,7 +685,7 @@ export default function Dashboard() {
                           />
                         </td>
                       ) : null}
-                      <td>
+                      <td data-label="Person">
                         {showingSheetEditor ? (
                           <input
                             className="cell-input"
@@ -702,8 +702,8 @@ export default function Dashboard() {
                           <PersonCell row={row} photo={profilePhotos[String(row.id)]} duplicate={duplicateMap[String(row.id)]} />
                         )}
                       </td>
-                      {visibleColumns.filter(([key]) => key !== 'name').map(([key]) => (
-                        <td key={key} className={`table-cell-${key}`}>
+                      {visibleColumns.filter(([key]) => key !== 'name').map(([key, label]) => (
+                        <td key={key} className={`table-cell-${key}`} data-label={label}>
                           {showingSheetEditor ? (
                             <input
                               className="cell-input"
@@ -721,8 +721,8 @@ export default function Dashboard() {
                           ) : formatCell(row?.[key], key)}
                         </td>
                       ))}
-                      <td>{!showingSheetEditor ? <StatusBadge row={row} /> : <span className="badge active">Draft</span>}</td>
-                      <td>
+                      <td data-label="Status">{!showingSheetEditor ? <StatusBadge row={row} /> : <span className="badge active">Draft</span>}</td>
+                      <td data-label="Actions">
                         {showingSheetEditor ? (
                           <div className="row-actions">
                             <button className="secondary icon-only" onClick={saveImportedRows} disabled={savingImport || !hasRequiredImportFields(row)} title="Save row">
