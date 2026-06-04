@@ -26,6 +26,10 @@ function createApp() {
     res.json({ status: 'ok' });
   });
 
+  app.get(['/favicon.ico', '/favicon.png'], (_req, res) => {
+    res.status(204).end();
+  });
+
   app.use('/api/auth', resolveExpressHandler(authRoutes, 'auth routes'));
   app.use('/api/personal-details', resolveExpressHandler(personalDetailsRoutes, 'personal details routes'));
   app.use(resolveExpressHandler(errorHandler, 'error handler'));
@@ -40,7 +44,7 @@ function resolveCorsOrigin(origin, callback) {
     return callback(null, true);
   }
 
-  if (normalizeOrigin(origin) === normalizeOrigin(env.clientOrigin)) {
+  if (resolveAllowedOrigins().includes(normalizeOrigin(origin))) {
     return callback(null, true);
   }
 
@@ -52,6 +56,10 @@ function resolveCorsOrigin(origin, callback) {
     return callback(null, true);
   }
 
+  if (/^https:\/\/personal-details?-manager(?:-[a-z0-9-]+)?\.vercel\.app$/.test(origin)) {
+    return callback(null, true);
+  }
+
   if (!env.isProduction && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
     return callback(null, true);
   }
@@ -59,8 +67,15 @@ function resolveCorsOrigin(origin, callback) {
   return callback(new Error('Origin is not allowed by CORS.'));
 }
 
+function resolveAllowedOrigins() {
+  return String(env.clientOrigin || '')
+    .split(',')
+    .map(normalizeOrigin)
+    .filter(Boolean);
+}
+
 function normalizeOrigin(origin) {
-  return String(origin || '').replace(/\/+$/, '');
+  return String(origin || '').trim().replace(/\/+$/, '');
 }
 
 function resolveExpressHandler(handler, label) {
