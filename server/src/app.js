@@ -6,7 +6,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import personalDetailsRoutes from './routes/personalDetails.routes.js';
 
-export function createApp() {
+function createApp() {
   const app = express();
 
 
@@ -32,6 +32,8 @@ export function createApp() {
 
   return app;
 }
+
+export default createApp;
 
 function resolveCorsOrigin(origin, callback) {
   if (!origin) {
