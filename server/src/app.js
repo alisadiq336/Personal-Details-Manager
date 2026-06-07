@@ -12,7 +12,7 @@ function createApp() {
 
 
   app.use(helmet());
-  app.use(cors({ origin: resolveCorsOrigin }));
+  app.use(cors({ origin: "https://personal-detail-manager.netlify.app/" }));
   app.use(express.json());
 
   app.get(['/', '/api'], (_req, res) => {
