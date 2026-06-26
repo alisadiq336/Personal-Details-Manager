@@ -1,11 +1,10 @@
-import createApp from '../src/app.js';
+let appPromise;
 
-const app = createApp();
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   try {
     if (handleSmokeTestRequest(req, res)) return;
 
+    const app = await getApp();
     app(req, res);
   } catch (error) {
     console.error(error);
@@ -13,6 +12,11 @@ export default function handler(req, res) {
     res.setHeader('content-type', 'application/json');
     res.end(JSON.stringify({ message: 'Unexpected server error.' }));
   }
+}
+
+async function getApp() {
+  appPromise ??= import('../src/app.js').then(({ default: createApp }) => createApp());
+  return appPromise;
 }
 
 function handleSmokeTestRequest(req, res) {
