@@ -15,10 +15,6 @@
     {
       "source": "/",
       "destination": "/api"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/server.js"
     }
   ]
 }

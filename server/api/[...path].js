@@ -32,7 +32,7 @@ function handleSmokeTestRequest(req, res) {
     return sendJson(res, 200, { status: 'ok' });
   }
 
-  if (['/favicon.ico', '/favicon.png'].includes(pathname)) {
+  if (['/favicon.ico', '/favicon.png', '/api/favicon.ico', '/api/favicon.png'].includes(pathname)) {
     res.statusCode = 204;
     res.end();
     return true;
