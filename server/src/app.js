@@ -15,11 +15,8 @@ function createApp() {
   app.use(cors({ origin: resolveCorsOrigin }));
   app.use(express.json());
 
-  app.get(['/', '/api'], (_req, res) => {
-    res.json({
-      activeStatus: 'ok',
-      error: false
-    });
+  app.get('/',  (_req, res) => {
+    res.send({ activeStatus: 'ok', error: false });
   });
 
   app.get('/api/health', (_req, res) => {
