@@ -26,7 +26,10 @@ const SEARCH_COLUMNS = [
   'country',
   'city',
   'fullAddress',
-  'cnic'
+  'cnic',
+  'ngoId',
+  'designation',
+  'dutyStation'
 ];
 
 const IMPORT_COLUMNS = [
@@ -40,8 +43,149 @@ const IMPORT_COLUMNS = [
   ['cnic', 'cnic'],
   ['dateOfBirth', 'dateOfBirth'],
   ['gender', 'gender'],
-  ['notes', 'notes']
+  ['notes', 'notes'],
+  ['ngoId', 'ngoId'],
+  ['fathersName', 'fathersName'],
+  ['bloodGroup', 'bloodGroup'],
+  ['languagesKnown', 'languagesKnown'],
+  ['profilePicture', 'profilePicture'],
+  ['countryOfAssignment', 'countryOfAssignment'],
+  ['homeCountry', 'homeCountry'],
+  ['organizationType', 'organizationType'],
+  ['parentOrganization', 'parentOrganization'],
+  ['subOrganization', 'subOrganization'],
+  ['department', 'department'],
+  ['designation', 'designation'],
+  ['dutyStation', 'dutyStation'],
+  ['currentLocation', 'currentLocation'],
+  ['employmentType', 'employmentType'],
+  ['joiningDate', 'joiningDate'],
+  ['contractExpiryDate', 'contractExpiryDate'],
+  ['workStatus', 'workStatus'],
+  ['reportingOfficer', 'reportingOfficer'],
+  ['officialPhone1', 'officialPhone1'],
+  ['officialPhone2', 'officialPhone2'],
+  ['officialEmail1', 'officialEmail1'],
+  ['officialEmail2', 'officialEmail2'],
+  ['personalEmail1', 'personalEmail1'],
+  ['mobileNo1', 'mobileNo1'],
+  ['mobileNo2', 'mobileNo2'],
+  ['presentAddress', 'presentAddress'],
+  ['permanentAddress', 'permanentAddress'],
+  ['emergencyContactName', 'emergencyContactName'],
+  ['emergencyContactRelationship', 'emergencyContactRelationship'],
+  ['emergencyContactNumber', 'emergencyContactNumber'],
+  ['nationalIdNumber', 'nationalIdNumber'],
+  ['governmentIdType', 'governmentIdType'],
+  ['governmentIdNumber', 'governmentIdNumber'],
+  ['panNumber', 'panNumber'],
+  ['passportNumber', 'passportNumber'],
+  ['passportIssuingCountry', 'passportIssuingCountry'],
+  ['passportIssueDate', 'passportIssueDate'],
+  ['passportExpiryDate', 'passportExpiryDate'],
+  ['visaType', 'visaType'],
+  ['visaNumber', 'visaNumber'],
+  ['visaExpiryDate', 'visaExpiryDate'],
+  ['workPermitNumber', 'workPermitNumber'],
+  ['workPermitExpiryDate', 'workPermitExpiryDate'],
+  ['bankName', 'bankName'],
+  ['accountTitle', 'accountTitle'],
+  ['accountNumber', 'accountNumber'],
+  ['iban', 'iban'],
+  ['swiftCode', 'swiftCode'],
+  ['branchName', 'branchName'],
+  ['salaryCurrency', 'salaryCurrency'],
+  ['taxIdNumber', 'taxIdNumber'],
+  ['paymentMethod', 'paymentMethod'],
+  ['spouseName', 'spouseName'],
+  ['spouseOccupation', 'spouseOccupation'],
+  ['numberOfDependents', 'numberOfDependents'],
+  ['dependent1Name', 'dependent1Name'],
+  ['dependent1Relationship', 'dependent1Relationship'],
+  ['dependent2Name', 'dependent2Name'],
+  ['dependent2Relationship', 'dependent2Relationship'],
+  ['relationWithOfficials', 'relationWithOfficials'],
+  ['linkedInId', 'linkedInId'],
+  ['facebookId', 'facebookId'],
+  ['twitterId', 'twitterId'],
+  ['instagramId', 'instagramId'],
+  ['telegramId', 'telegramId'],
+  ['skypeId', 'skypeId'],
+  ['whatsAppNumber', 'whatsAppNumber'],
+  ['signalNumber', 'signalNumber'],
+  ['microsoftTeamsId', 'microsoftTeamsId'],
+  ['otherSocialMediaId', 'otherSocialMediaId'],
+  ['socialMediaAccountType', 'socialMediaAccountType'],
+  ['verificationStatus', 'verificationStatus'],
+  ['remarks', 'remarks'],
+  ['recordDate', 'recordDate'],
+  ['recordCreatedBy', 'recordCreatedBy'],
+  ['recordCreatedDate', 'recordCreatedDate'],
+  ['recordLastUpdatedBy', 'recordLastUpdatedBy'],
+  ['recordLastUpdatedDate', 'recordLastUpdatedDate'],
+  ['recordVerificationStatus', 'recordVerificationStatus'],
+  ['comments', 'comments']
 ];
+
+function syncLegacyFields(row) {
+  if (!row) return row;
+
+  row.name = row.name || '';
+
+  // Forward syncing (from new to old)
+  if (row.officialEmail1 && !row.email) {
+    row.email = row.officialEmail1;
+  }
+  if (row.officialPhone1 && !row.phoneNumber) {
+    row.phoneNumber = row.officialPhone1;
+  }
+  if (row.parentOrganization && !row.organization) {
+    row.organization = row.parentOrganization;
+  }
+  if (row.countryOfAssignment && !row.country) {
+    row.country = row.countryOfAssignment;
+  }
+  if (row.dutyStation && !row.city) {
+    row.city = row.dutyStation.split(',')[0].trim();
+  }
+  if (row.presentAddress && !row.fullAddress) {
+    row.fullAddress = row.presentAddress;
+  }
+  if (row.nationalIdNumber && !row.cnic) {
+    row.cnic = row.nationalIdNumber;
+  }
+  if (row.comments && !row.notes) {
+    row.notes = row.comments;
+  }
+
+  // Reverse syncing (from old to new)
+  if (row.email && !row.officialEmail1) {
+    row.officialEmail1 = row.email;
+  }
+  if (row.phoneNumber && !row.officialPhone1) {
+    row.officialPhone1 = row.phoneNumber;
+  }
+  if (row.organization && !row.parentOrganization) {
+    row.parentOrganization = row.organization;
+  }
+  if (row.country && !row.countryOfAssignment) {
+    row.countryOfAssignment = row.country;
+  }
+  if (row.city && !row.dutyStation) {
+    row.dutyStation = row.city;
+  }
+  if (row.fullAddress && !row.presentAddress) {
+    row.presentAddress = row.fullAddress;
+  }
+  if (row.cnic && !row.nationalIdNumber) {
+    row.nationalIdNumber = row.cnic;
+  }
+  if (row.notes && !row.comments) {
+    row.comments = row.notes;
+  }
+
+  return row;
+}
 
 export async function getPersonalDetails(query) {
   try {
@@ -120,8 +264,7 @@ async function getPostgresPersonalDetails(query) {
 
   const [data, total, countries, cities, organizations] = await Promise.all([
     postgresQuery(`
-      SELECT id, name, email, "phoneNumber", organization, country, city, "fullAddress",
-        cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
+      SELECT *
       FROM "personalDetails"
       ${filter.where}
       ORDER BY ${quoteColumn(sortColumn)} ${sortDirection}, id ASC
@@ -155,7 +298,6 @@ async function importPostgresPersonalDetails(rows) {
   const now = new Date();
   const docs = validRows.map((row) => ({
     ...row,
-    dateOfBirth: row.dateOfBirth || null,
     createdAt: now,
     updatedAt: now
   }));
@@ -165,29 +307,25 @@ async function importPostgresPersonalDetails(rows) {
     const insertedRows = [];
 
     for (const doc of docs) {
+      const columns = [];
+      const placeholders = [];
+      const values = [];
+
+      for (const [key] of IMPORT_COLUMNS) {
+        columns.push(quoteColumn(key));
+        placeholders.push(`$${values.length + 1}`);
+        values.push(doc[key] ?? null);
+      }
+
+      columns.push('"createdAt"', '"updatedAt"');
+      placeholders.push(`$${values.length + 1}`, `$${values.length + 2}`);
+      values.push(doc.createdAt, doc.updatedAt);
+
       const result = await client.query(`
-        INSERT INTO "personalDetails" (
-          name, email, "phoneNumber", organization, country, city, "fullAddress",
-          cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING id, name, email, "phoneNumber", organization, country, city, "fullAddress",
-          cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
-      `, [
-        doc.name,
-        doc.email,
-        doc.phoneNumber,
-        doc.organization,
-        doc.country,
-        doc.city,
-        doc.fullAddress,
-        doc.cnic,
-        doc.dateOfBirth,
-        doc.gender,
-        doc.notes,
-        doc.createdAt,
-        doc.updatedAt
-      ]);
+        INSERT INTO "personalDetails" (${columns.join(', ')})
+        VALUES (${placeholders.join(', ')})
+        RETURNING *
+      `, values);
 
       insertedRows.push(result.rows[0]);
     }
@@ -210,38 +348,27 @@ async function importPostgresPersonalDetails(rows) {
 async function updatePostgresPersonalDetail(id, row) {
   const rowId = parsePostgresId(id);
   const patch = normalizeImportRow(row);
+
+  const sets = [];
+  const values = [];
+
+  for (const [key] of IMPORT_COLUMNS) {
+    sets.push(`${quoteColumn(key)} = $${values.length + 1}`);
+    values.push(patch[key] ?? null);
+  }
+
+  sets.push(`"updatedAt" = $${values.length + 1}`);
+  values.push(new Date());
+
+  const idParamIndex = values.length + 1;
+  values.push(rowId);
+
   const result = await postgresQuery(`
     UPDATE "personalDetails"
-    SET name = $1,
-      email = $2,
-      "phoneNumber" = $3,
-      organization = $4,
-      country = $5,
-      city = $6,
-      "fullAddress" = $7,
-      cnic = $8,
-      "dateOfBirth" = $9,
-      gender = $10,
-      notes = $11,
-      "updatedAt" = $12
-    WHERE id = $13
-    RETURNING id, name, email, "phoneNumber", organization, country, city, "fullAddress",
-      cnic, "dateOfBirth", gender, notes, "createdAt", "updatedAt"
-  `, [
-    patch.name,
-    patch.email,
-    patch.phoneNumber,
-    patch.organization,
-    patch.country,
-    patch.city,
-    patch.fullAddress,
-    patch.cnic,
-    patch.dateOfBirth || null,
-    patch.gender,
-    patch.notes,
-    new Date(),
-    rowId
-  ]);
+    SET ${sets.join(', ')}
+    WHERE id = $${idParamIndex}
+    RETURNING *
+  `, values);
 
   if (!result.rowCount) throwNotFound();
 
@@ -304,9 +431,10 @@ function validateImportRows(rows) {
 }
 
 function normalizeImportRow(row) {
-  return Object.fromEntries(
+  const normalized = Object.fromEntries(
     IMPORT_COLUMNS.map(([key]) => [key, cleanValue(row?.[key], key)])
   );
+  return syncLegacyFields(normalized);
 }
 
 async function getLocalPersonalDetails(query) {
@@ -372,22 +500,29 @@ async function deleteLocalPersonalDetail(id) {
 }
 
 function formatPostgresRow(row) {
-  return {
-    id: row.id?.toString(),
-    name: row.name,
-    email: row.email,
-    phoneNumber: row.phoneNumber,
-    organization: row.organization,
-    country: row.country,
-    city: row.city,
-    fullAddress: row.fullAddress,
-    cnic: row.cnic,
-    dateOfBirth: formatDate(row.dateOfBirth),
-    gender: row.gender,
-    notes: row.notes,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt
-  };
+  if (!row) return null;
+  const formatted = { ...row, id: row.id?.toString() };
+
+  const dateFields = [
+    'dateOfBirth',
+    'joiningDate',
+    'contractExpiryDate',
+    'passportIssueDate',
+    'passportExpiryDate',
+    'visaExpiryDate',
+    'workPermitExpiryDate',
+    'recordDate',
+    'recordCreatedDate',
+    'recordLastUpdatedDate'
+  ];
+
+  for (const field of dateFields) {
+    if (formatted[field]) {
+      formatted[field] = formatDate(formatted[field]);
+    }
+  }
+
+  return formatted;
 }
 
 function matchesSearch(row, search) {
@@ -434,7 +569,29 @@ function cleanValue(value, key) {
   if (value == null) return null;
   const text = String(value).trim();
   if (!text) return null;
-  if (key === 'dateOfBirth') return normalizeDate(text);
+
+  const dateFields = [
+    'dateOfBirth',
+    'joiningDate',
+    'contractExpiryDate',
+    'passportIssueDate',
+    'passportExpiryDate',
+    'visaExpiryDate',
+    'workPermitExpiryDate',
+    'recordDate',
+    'recordCreatedDate',
+    'recordLastUpdatedDate'
+  ];
+
+  if (dateFields.includes(key)) {
+    return normalizeDate(text);
+  }
+
+  if (key === 'numberOfDependents') {
+    const num = Number.parseInt(text, 10);
+    return Number.isNaN(num) ? null : num;
+  }
+
   return text;
 }
 

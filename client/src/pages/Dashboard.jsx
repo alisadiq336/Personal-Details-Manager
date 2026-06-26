@@ -47,10 +47,213 @@ const columns = [
   ['cnic', 'CNIC'],
   ['dateOfBirth', 'Date of Birth'],
   ['gender', 'Gender'],
-  ['notes', 'Notes']
+  ['notes', 'Notes'],
+  ['ngoId', 'NGO ID'],
+  ['fathersName', "Father's Name"],
+  ['bloodGroup', 'Blood Group'],
+  ['languagesKnown', 'Languages Known'],
+  ['profilePicture', 'Profile Picture'],
+  ['countryOfAssignment', 'Country of Assignment'],
+  ['homeCountry', 'Home Country'],
+  ['organizationType', 'Organization Type'],
+  ['parentOrganization', 'Parent Organization'],
+  ['subOrganization', 'Sub Organization'],
+  ['department', 'Department'],
+  ['currentAppointment', 'Current Appointment'],
+  ['designation', 'Designation'],
+  ['dutyStation', 'Duty Station'],
+  ['currentLocation', 'Current Location'],
+  ['employmentType', 'Employment Type'],
+  ['joiningDate', 'Joining Date'],
+  ['contractExpiryDate', 'Contract Expiry Date'],
+  ['workStatus', 'Work Status'],
+  ['reportingOfficer', 'Reporting Officer'],
+  ['officialPhone1', 'Official Phone 1'],
+  ['officialPhone2', 'Official Phone 2'],
+  ['officialEmail1', 'Official Email 1'],
+  ['officialEmail2', 'Official Email 2'],
+  ['personalEmail1', 'Personal Email 1'],
+  ['mobileNo1', 'Mobile No 1'],
+  ['mobileNo2', 'Mobile No 2'],
+  ['presentAddress', 'Present Address'],
+  ['permanentAddress', 'Permanent Address'],
+  ['emergencyContactName', 'Emergency Contact Name'],
+  ['emergencyContactRelationship', 'Emergency Contact Relationship'],
+  ['emergencyContactNumber', 'Emergency Contact Number'],
+  ['nationalIdNumber', 'National ID Number'],
+  ['governmentIdType', 'Government ID Type'],
+  ['governmentIdNumber', 'Government ID Number'],
+  ['panNumber', 'PAN Number'],
+  ['passportNumber', 'Passport Number'],
+  ['passportIssuingCountry', 'Passport Issuing Country'],
+  ['passportIssueDate', 'Passport Issue Date'],
+  ['passportExpiryDate', 'Passport Expiry Date'],
+  ['visaType', 'Visa Type'],
+  ['visaNumber', 'Visa Number'],
+  ['visaExpiryDate', 'Visa Expiry Date'],
+  ['workPermitNumber', 'Work Permit Number'],
+  ['workPermitExpiryDate', 'Work Permit Expiry Date'],
+  ['bankName', 'Bank Name'],
+  ['accountTitle', 'Account Title'],
+  ['accountNumber', 'Account Number'],
+  ['iban', 'IBAN'],
+  ['swiftCode', 'SWIFT Code'],
+  ['branchName', 'Branch Name'],
+  ['salaryCurrency', 'Salary Currency'],
+  ['taxIdNumber', 'Tax ID Number'],
+  ['paymentMethod', 'Payment Method'],
+  ['spouseName', 'Spouse Name'],
+  ['spouseOccupation', 'Spouse Occupation'],
+  ['numberOfDependents', 'Number of Dependents'],
+  ['dependent1Name', 'Dependent 1 Name'],
+  ['dependent1Relationship', 'Dependent 1 Relationship'],
+  ['dependent2Name', 'Dependent 2 Name'],
+  ['dependent2Relationship', 'Dependent 2 Relationship'],
+  ['relationWithOfficials', 'Relation with Officials'],
+  ['linkedInId', 'LinkedIn ID'],
+  ['facebookId', 'Facebook ID'],
+  ['twitterId', 'Twitter ID'],
+  ['instagramId', 'Instagram ID'],
+  ['telegramId', 'Telegram ID'],
+  ['skypeId', 'Skype ID'],
+  ['whatsAppNumber', 'WhatsApp Number'],
+  ['signalNumber', 'Signal Number'],
+  ['microsoftTeamsId', 'Microsoft Teams ID'],
+  ['otherSocialMediaId', 'Other Social Media ID'],
+  ['socialMediaAccountType', 'Account Type'],
+  ['verificationStatus', 'Verification Status'],
+  ['remarks', 'Remarks'],
+  ['recordDate', 'Record Date'],
+  ['recordCreatedBy', 'Record Created By'],
+  ['recordCreatedDate', 'Record Created Date'],
+  ['recordLastUpdatedBy', 'Record Last Updated By'],
+  ['recordLastUpdatedDate', 'Record Last Updated Date'],
+  ['recordVerificationStatus', 'Record Verification Status'],
+  ['comments', 'Comments']
 ];
 
-const defaultColumnState = Object.fromEntries(columns.map(([key]) => [key, true]));
+const TABS = [
+  { id: 'personal', label: '👤 Personal' },
+  { id: 'job', label: '💼 Job/Org' },
+  { id: 'contact', label: '📞 Contact' },
+  { id: 'identity', label: '🪪 Identity' },
+  { id: 'banking', label: '💳 Banking & Finance' },
+  { id: 'family', label: '👨‍👩‍👧‍👦 Family' },
+  { id: 'social', label: '🌐 Social Media' },
+  { id: 'audit', label: '📋 Audit & Comments' }
+];
+
+const tabFields = {
+  personal: [
+    ['name', 'Full Name'],
+    ['ngoId', 'NGO ID'],
+    ['fathersName', "Father's Name"],
+    ['gender', 'Gender'],
+    ['dateOfBirth', 'Date of Birth'],
+    ['bloodGroup', 'Blood Group'],
+    ['languagesKnown', 'Languages Known'],
+    ['profilePicture', 'Profile Picture']
+  ],
+  job: [
+    ['countryOfAssignment', 'Country of Assignment'],
+    ['homeCountry', 'Home Country'],
+    ['organizationType', 'Organization Type'],
+    ['parentOrganization', 'Parent Organization'],
+    ['subOrganization', 'Sub Organization'],
+    ['department', 'Department'],
+    ['currentAppointment', 'Current Appointment'],
+    ['designation', 'Designation'],
+    ['dutyStation', 'Duty Station'],
+    ['currentLocation', 'Current Location'],
+    ['employmentType', 'Employment Type'],
+    ['joiningDate', 'Joining Date'],
+    ['contractExpiryDate', 'Contract Expiry Date'],
+    ['workStatus', 'Work Status'],
+    ['reportingOfficer', 'Reporting Officer'],
+    ['salary', 'Salary']
+  ],
+  contact: [
+    ['officialPhone1', 'Official Phone 1'],
+    ['officialPhone2', 'Official Phone 2'],
+    ['officialEmail1', 'Official Email 1'],
+    ['officialEmail2', 'Official Email 2'],
+    ['personalEmail1', 'Personal Email 1'],
+    ['mobileNo1', 'Mobile No 1'],
+    ['mobileNo2', 'Mobile No 2'],
+    ['presentAddress', 'Present Address'],
+    ['permanentAddress', 'Permanent Address'],
+    ['emergencyContactName', 'Emergency Contact Name'],
+    ['emergencyContactRelationship', 'Emergency Contact Relationship'],
+    ['emergencyContactNumber', 'Emergency Contact Number']
+  ],
+  identity: [
+    ['nationalIdNumber', 'National ID Number'],
+    ['governmentIdType', 'Government ID Type'],
+    ['governmentIdNumber', 'Government ID Number'],
+    ['panNumber', 'PAN Number'],
+    ['passportNumber', 'Passport Number'],
+    ['passportIssuingCountry', 'Passport Issuing Country'],
+    ['passportIssueDate', 'Passport Issue Date'],
+    ['passportExpiryDate', 'Passport Expiry Date'],
+    ['visaType', 'Visa Type'],
+    ['visaNumber', 'Visa Number'],
+    ['visaExpiryDate', 'Visa Expiry Date'],
+    ['workPermitNumber', 'Work Permit Number'],
+    ['workPermitExpiryDate', 'Work Permit Expiry Date']
+  ],
+  banking: [
+    ['bankName', 'Bank Name'],
+    ['accountTitle', 'Account Title'],
+    ['accountNumber', 'Account Number'],
+    ['iban', 'IBAN'],
+    ['swiftCode', 'SWIFT Code'],
+    ['branchName', 'Branch Name'],
+    ['salaryCurrency', 'Salary Currency'],
+    ['taxIdNumber', 'Tax ID Number'],
+    ['paymentMethod', 'Payment Method']
+  ],
+  family: [
+    ['spouseName', 'Spouse Name'],
+    ['spouseOccupation', 'Spouse Occupation'],
+    ['numberOfDependents', 'Number of Dependents'],
+    ['dependent1Name', 'Dependent 1 Name'],
+    ['dependent1Relationship', 'Dependent 1 Relationship'],
+    ['dependent2Name', 'Dependent 2 Name'],
+    ['dependent2Relationship', 'Dependent 2 Relationship'],
+    ['relationWithOfficials', 'Relation with Officials']
+  ],
+  social: [
+    ['linkedInId', 'LinkedIn ID'],
+    ['facebookId', 'Facebook ID'],
+    ['twitterId', 'Twitter ID'],
+    ['instagramId', 'Instagram ID'],
+    ['telegramId', 'Telegram ID'],
+    ['skypeId', 'Skype ID'],
+    ['whatsAppNumber', 'WhatsApp Number'],
+    ['signalNumber', 'Signal Number'],
+    ['microsoftTeamsId', 'Microsoft Teams ID'],
+    ['otherSocialMediaId', 'Other Social Media ID'],
+    ['socialMediaAccountType', 'Account Type'],
+    ['verificationStatus', 'Verification Status'],
+    ['remarks', 'Remarks']
+  ],
+  audit: [
+    ['recordDate', 'Record Date'],
+    ['recordCreatedBy', 'Record Created By'],
+    ['recordCreatedDate', 'Record Created Date'],
+    ['recordLastUpdatedBy', 'Record Last Updated By'],
+    ['recordLastUpdatedDate', 'Record Last Updated Date'],
+    ['recordVerificationStatus', 'Record Verification Status'],
+    ['comments', 'Comments']
+  ]
+};
+
+const defaultColumnState = Object.fromEntries(
+  columns.map(([key]) => [
+    key,
+    ['name', 'email', 'phoneNumber', 'organization', 'country', 'notes'].includes(key)
+  ])
+);
 const sortableColumns = new Set(['name', 'email', 'phoneNumber', 'organization', 'country', 'city', 'cnic']);
 const createEmptyImportRow = () => Object.fromEntries(importColumns.map(([key]) => [key, '']));
 const navItems = [
@@ -96,8 +299,14 @@ export default function Dashboard() {
   const [deletingRowId, setDeletingRowId] = useState(null);
   const [selectedRows, setSelectedRows] = useState([]);
   const [activeRecord, setActiveRecord] = useState(null);
+  const [activeModalTab, setActiveModalTab] = useState('personal');
+
+  function openRecord(row) {
+    setActiveRecord(row);
+    setActiveModalTab('personal');
+  }
   const [columnState, setColumnState] = useState(() => {
-    const saved = localStorage.getItem('pdm_columns');
+    const saved = localStorage.getItem('pdm_columns_v2');
     return saved ? { ...defaultColumnState, ...JSON.parse(saved) } : defaultColumnState;
   });
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('pdm_theme') === 'dark');
@@ -112,9 +321,13 @@ export default function Dashboard() {
   const showingSheetEditor = editingSheet || importedRows.length > 0;
   const visibleRows = showingSheetEditor ? importedRows : rows;
   const activeRows = useMemo(() => filterClientRows(rows, query), [rows, query]);
-  const visibleColumns = showingSheetEditor
-    ? importColumns
-    : columns.filter(([key]) => columnState[key]);
+  const visibleColumns = (showingSheetEditor ? importColumns : columns)
+    .filter(([key]) => columnState[key]);
+  if (typeof window !== 'undefined') {
+    window.visibleColumns = visibleColumns;
+    window.columnState = columnState;
+  }
+
   const validImportRows = useMemo(
     () => importedRows.filter((row) => hasRequiredImportFields(row)),
     [importedRows]
@@ -139,7 +352,7 @@ export default function Dashboard() {
   }, [query]);
 
   useEffect(() => {
-    localStorage.setItem('pdm_columns', JSON.stringify(columnState));
+    localStorage.setItem('pdm_columns_v2', JSON.stringify(columnState));
   }, [columnState]);
 
   useEffect(() => {
@@ -674,7 +887,7 @@ export default function Dashboard() {
                   <tr><td colSpan={visibleColumns.length + 3} className="table-message">Loading records...</td></tr>
                 ) : visibleRows.length ? (
                   visibleRows.map((row, index) => (
-                    <tr key={row.id ?? index} onDoubleClick={() => !showingSheetEditor && setActiveRecord(row)}>
+                    <tr key={row.id ?? index} onDoubleClick={() => !showingSheetEditor && openRecord(row)}>
                       {!showingSheetEditor ? (
                         <td className="select-col" data-label="Select">
                           <input
@@ -702,25 +915,27 @@ export default function Dashboard() {
                           <PersonCell row={row} photo={profilePhotos[String(row.id)]} duplicate={duplicateMap[String(row.id)]} />
                         )}
                       </td>
-                      {visibleColumns.filter(([key]) => key !== 'name').map(([key, label]) => (
-                        <td key={key} className={`table-cell-${key}`} data-label={label}>
-                          {showingSheetEditor ? (
-                            <input
-                              className="cell-input"
-                              type={key === 'dateOfBirth' ? 'date' : 'text'}
-                              value={row?.[key] || ''}
-                              onChange={(event) => updateImportedCell(index, key, event.target.value)}
-                            />
-                          ) : String(editingRowId) === String(row.id) ? (
-                            <input
-                              className="cell-input"
-                              type={key === 'dateOfBirth' ? 'date' : 'text'}
-                              value={editDraft[key] || ''}
-                              onChange={(event) => updateEditCell(key, event.target.value)}
-                            />
-                          ) : formatCell(row?.[key], key)}
-                        </td>
-                      ))}
+                      {visibleColumns.filter(([key]) => key !== 'name').map(([key, label]) => {
+                        return (
+                          <td key={key} className={`table-cell-${key}`} data-label={label}>
+                            {showingSheetEditor ? (
+                              <input
+                                className="cell-input"
+                                type={key === 'dateOfBirth' ? 'date' : 'text'}
+                                value={row?.[key] || ''}
+                                onChange={(event) => updateImportedCell(index, key, event.target.value)}
+                              />
+                            ) : String(editingRowId) === String(row.id) ? (
+                              <input
+                                className="cell-input"
+                                type={key === 'dateOfBirth' ? 'date' : 'text'}
+                                value={editDraft[key] || ''}
+                                onChange={(event) => updateEditCell(key, event.target.value)}
+                              />
+                            ) : formatCell(row?.[key], key)}
+                          </td>
+                        );
+                      })}
                       <td data-label="Status">{!showingSheetEditor ? <StatusBadge row={row} /> : <span className="badge active">Draft</span>}</td>
                       <td data-label="Actions">
                         {showingSheetEditor ? (
@@ -743,7 +958,7 @@ export default function Dashboard() {
                           </div>
                         ) : (
                           <div className="row-actions">
-                            <button className="secondary icon-only" onClick={() => setActiveRecord(row)} disabled={deletingRowId === row.id} title="View row">
+                            <button className="secondary icon-only" onClick={() => openRecord(row)} disabled={deletingRowId === row.id} title="View row">
                               <Eye size={16} />
                             </button>
                             <button className="secondary icon-only" onClick={() => beginEditRow(row)} disabled={deletingRowId === row.id} title="Edit row">
@@ -800,7 +1015,7 @@ export default function Dashboard() {
             </div>
             <div className="summary-list">
               {rows.slice(0, 4).map((row) => (
-                <button key={row.id} className="summary-row" onClick={() => setActiveRecord(row)}>
+                <button key={row.id} className="summary-row" onClick={() => openRecord(row)}>
                   <span>{row.name || 'Unnamed record'}</span>
                   <strong>{(documents[String(row.id)] || []).length}</strong>
                 </button>
@@ -903,8 +1118,8 @@ export default function Dashboard() {
             <div className="record-hero">
               <Avatar row={activeRecord} photo={profilePhotos[String(activeRecord.id)]} />
               <div>
-                <h2>{activeRecord.name}</h2>
-                <p>{activeRecord.organization || 'No organization'}</p>
+                <h2>{activeRecord.name || 'Unnamed Record'}</h2>
+                <p>{activeRecord.parentOrganization || activeRecord.organization || 'No organization'}</p>
                 <StatusBadge row={activeRecord} />
               </div>
             </div>
@@ -924,43 +1139,77 @@ export default function Dashboard() {
               )}
               <button className="secondary icon-button danger-button" onClick={() => deleteRow(activeRecord)}><Trash2 size={16} /> Delete</button>
             </div>
+
+            <div className="modal-tabs" role="tablist">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`modal-tab-button ${activeModalTab === tab.id ? 'active' : ''}`}
+                  onClick={() => setActiveModalTab(tab.id)}
+                  role="tab"
+                  aria-selected={activeModalTab === tab.id}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
             {activeRecordIsEditing ? (
               <div className="record-edit-form">
-                {columns.map(([key, label]) => (
-                  <label key={key} className={key === 'notes' || key === 'fullAddress' ? 'wide-field' : ''}>
-                    <span>{label}</span>
-                    {key === 'notes' || key === 'fullAddress' ? (
-                      <textarea
-                        value={editDraft[key] || ''}
-                        onChange={(event) => updateEditCell(key, event.target.value)}
-                        rows={key === 'notes' ? 3 : 2}
-                      />
-                    ) : (
-                      <input
-                        type={key === 'dateOfBirth' ? 'date' : 'text'}
-                        value={editDraft[key] || ''}
-                        onChange={(event) => updateEditCell(key, event.target.value)}
-                      />
-                    )}
-                  </label>
-                ))}
+                {tabFields[activeModalTab].map(([key, label]) => {
+                  const isDate = [
+                    'dateOfBirth',
+                    'joiningDate',
+                    'contractExpiryDate',
+                    'passportIssueDate',
+                    'passportExpiryDate',
+                    'visaExpiryDate',
+                    'workPermitExpiryDate',
+                    'recordDate',
+                    'recordCreatedDate',
+                    'recordLastUpdatedDate'
+                  ].includes(key);
+                  const isTextarea = ['presentAddress', 'permanentAddress', 'comments', 'remarks'].includes(key);
+                  const isNumber = ['numberOfDependents'].includes(key);
+
+                  return (
+                    <label key={key} className={isTextarea ? 'wide-field' : ''}>
+                      <span>{label}</span>
+                      {isTextarea ? (
+                        <textarea
+                          value={editDraft[key] || ''}
+                          onChange={(event) => updateEditCell(key, event.target.value)}
+                          rows={2}
+                        />
+                      ) : (
+                        <input
+                          type={isDate ? 'date' : isNumber ? 'number' : 'text'}
+                          value={editDraft[key] || ''}
+                          onChange={(event) => updateEditCell(key, event.target.value)}
+                        />
+                      )}
+                    </label>
+                  );
+                })}
               </div>
             ) : (
               <div className="record-details">
-                {columns.filter(([key]) => key !== 'notes').map(([key, label]) => (
+                {tabFields[activeModalTab].map(([key, label]) => (
                   <div key={key}>
                     <span>{label}</span>
                     <strong>{formatCell(activeRecord[key], key) || 'Not set'}</strong>
                   </div>
                 ))}
-                <div>
-                  <span>Map</span>
-                  {activeRecord.fullAddress || activeRecord.city ? (
-                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([activeRecord.fullAddress, activeRecord.city, activeRecord.country].filter(Boolean).join(', '))}`} target="_blank" rel="noreferrer">
-                      <MapPin size={15} /> View on Map
-                    </a>
-                  ) : <strong>Not available</strong>}
-                </div>
+                {activeModalTab === 'contact' && (
+                  <div>
+                    <span>Map</span>
+                    {activeRecord.presentAddress || activeRecord.city ? (
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([activeRecord.presentAddress, activeRecord.city, activeRecord.country].filter(Boolean).join(', '))}`} target="_blank" rel="noreferrer">
+                        <MapPin size={15} /> View on Map
+                      </a>
+                    ) : <strong>Not available</strong>}
+                  </div>
+                )}
               </div>
             )}
             <div className="modal-split">
@@ -1102,7 +1351,21 @@ function buildNotifications(importMessage, selectedCount, rows) {
 
 function formatCell(value, key) {
   if (!value) return '';
-  if (['dateOfBirth', 'createdAt', 'updatedAt'].includes(key)) {
+  const dateFields = [
+    'dateOfBirth',
+    'joiningDate',
+    'contractExpiryDate',
+    'passportIssueDate',
+    'passportExpiryDate',
+    'visaExpiryDate',
+    'workPermitExpiryDate',
+    'recordDate',
+    'recordCreatedDate',
+    'recordLastUpdatedDate',
+    'createdAt',
+    'updatedAt'
+  ];
+  if (dateFields.includes(key)) {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
   }
