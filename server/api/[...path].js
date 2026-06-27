@@ -22,9 +22,16 @@ async function getApp() {
 function handleSmokeTestRequest(req, res) {
   if (req.method !== 'GET') return false;
 
-  const pathname = new URL(req.url || '/', 'https://personal-details-manager-server.vercel.app').pathname;
+  const urlObj = new URL(req.url || '/', 'https://personal-details-manager-server.vercel.app');
+  let pathname = urlObj.pathname;
 
-  if (['/', '/api'].includes(pathname)) {
+  // Normalize pathname: remove trailing slash (except for '/')
+  if (pathname.length > 1 && pathname.endsWith('/')) {
+    pathname = pathname.slice(0, -1);
+  }
+
+  // Broad match for root/index requests
+  if (['/', '/api', '/api/index', '/api/index.js', '/index.js'].includes(pathname)) {
     return sendJson(res, 200, { activeStatus: 'ok', error: false });
   }
 

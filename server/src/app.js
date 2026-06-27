@@ -16,7 +16,7 @@ function createApp() {
   app.use(express.json());
 
   app.get('/',  (_req, res) => {
-    res.send({ activeStatus: 'ok', error: false });
+    res.json({ activeStatus: 'ok', error: false });
   });
 
   app.get('/api/health', (_req, res) => {
