@@ -99,6 +99,8 @@ const seedColumns = [
   'comments'
 ];
 
+const INITIAL_CONNECT_TIMEOUT_MS = 10000;
+
 let pool;
 let poolPromise;
 
@@ -113,13 +115,17 @@ export async function getPostgresClient() {
 }
 
 export async function closePostgres() {
-  await pool?.end();
+  await pool?.end().catch(() => {});
   pool = undefined;
   poolPromise = undefined;
 }
 
 async function personalDetailsPool() {
-  poolPromise ??= connect().catch((error) => {
+  poolPromise ??= connect().catch(async (error) => {
+    // Make sure we don't hang onto a half-initialized pool on failure,
+    // so the next request gets a clean retry instead of reusing a broken one.
+    await pool?.end().catch(() => {});
+    pool = undefined;
     poolPromise = undefined;
     throw error;
   });
@@ -130,15 +136,48 @@ async function personalDetailsPool() {
 async function connect() {
   pool = new Pool({
     connectionString: requireEnv('DATABASE_URL'),
-    ssl: process.env.PGSSLMODE === 'require' ? { rejectUnauthorized: false } : undefined,
-    connectionTimeoutMillis: 10000
+    ssl: resolveSslConfig(),
+    connectionTimeoutMillis: INITIAL_CONNECT_TIMEOUT_MS,
+    // Serverless-friendly pool sizing: one connection per function
+    // invocation, released quickly when idle instead of held open.
+    max: 1,
+    idleTimeoutMillis: 10000
   });
 
-  await pool.query('SELECT 1');
+  // Guard the very first round trip with an explicit timeout. Some
+  // network failures (wrong host, DB not reachable, SSL negotiation
+  // stalls) are not reliably caught by connectionTimeoutMillis alone
+  // and can otherwise hang until the platform's own timeout kills
+  // the whole function (e.g. Vercel's 300s limit).
+  await withTimeout(
+    pool.query('SELECT 1'),
+    INITIAL_CONNECT_TIMEOUT_MS,
+    'Could not establish an initial database connection in time. Check DATABASE_URL, network access, and SSL settings.'
+  );
+
   await createSchema();
   await seedDefaultRows();
 
   return pool;
+}
+
+function resolveSslConfig() {
+  // Explicitly disabled -> no SSL.
+  if (process.env.PGSSLMODE === 'disable') return undefined;
+
+  // Most managed Postgres providers (Neon, Supabase, Render, RDS, etc.)
+  // require SSL even when PGSSLMODE isn't set, so default to enabling it
+  // unless explicitly turned off above. Adjust if your DB truly has no SSL.
+  return { rejectUnauthorized: false };
+}
+
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
 async function createSchema() {
